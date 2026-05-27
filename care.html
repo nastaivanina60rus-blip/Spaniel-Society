@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>База знаний о спаниелях — Spaniel Society</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .care-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .warning-box {
+            background: #fff5f5;
+            border-left: 5px solid #ff8ba7;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 15px 15px 0;
+        }
+        .check-list {
+            list-style: none;
+            padding: 0;
+        }
+        .check-list li::before {
+            content: "✅";
+            margin-right: 10px;
+        }
+        .icon-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="container header__container">
+            <a href="index.html" class="logo">Spaniel Society</a>
+            <nav class="nav">
+                <ul class="nav__list">
+                    <li><a href="index.html" class="nav__link">Главная</a></li>
+                    <li><a href="breeds.html" class="nav__link">Породы</a></li>
+                    <li><a href="care.html" class="nav__link active">Уход и советы</a></li>
+                    <li><a href="community.html" class="nav__link">Клуб</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 40px 0;">
+        <h1 style="text-align: center; font-family: 'Playfair Display'; font-size: 2.5rem; margin-bottom: 10px;">Всё об уходе за спаниелем</h1>
+        <p style="text-align: center; opacity: 0.8; margin-bottom: 50px;">Руководство по воспитанию счастливой и здоровой собаки</p>
+
+        <div class="info-card">
+            <div class="icon-header">
+                <span style="font-size: 2rem;">📜</span>
+                <h2>История и особенности группы</h2>
+            </div>
+            <p>Первые упоминания о спаниелях датируются XIV веком. Считается, что их предки попали в Британию из Испании (отсюда и название «спаниель»). Это собаки с «мягким» характером, ориентированные на человека. Они обладают высоким интеллектом и требуют не только физических, но и умственных нагрузок.</p>
+        </div>
+
+        <div class="care-grid">
+            <div class="info-card">
+                <div class="icon-header">
+                    <span style="font-size: 2rem;">👂</span>
+                    <h3>Забота об ушах</h3>
+                </div>
+                <p>Длинные висячие уши — визитная карточка и «слабое место» породы. Из-за плохой вентиляции там легко развиваются отиты.</p>
+                <ul class="check-list">
+                    <li>Проверяйте уши после каждой прогулки (на наличие клещей и колючек).</li>
+                    <li>Чистите специальным лосьоном раз в неделю.</li>
+                    <li>Используйте высокие узкие миски, чтобы уши не попадали в еду.</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="icon-header">
+                    <span style="font-size: 2rem;">✂️</span>
+                    <h3>Шерсть и гигиена</h3>
+                </div>
+                <p>Шерсть спаниеля склонна к образованию колтунов, особенно в паху и за ушами.</p>
+                <ul class="check-list">
+                    <li>Вычесывание 2-3 раза в неделю.</li>
+                    <li>Стрижка когтей раз в месяц.</li>
+                    <li>Выстригание шерсти между подушечками лап (предотвращает скольжение и скопление грязи).</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="icon-header">
+                    <span style="font-size: 2rem;">🥣</span>
+                    <h3>Питание и вес</h3>
+                </div>
+                <p>Спаниели очень пищезависимы и склонны к быстрому набору веса.</p>
+                <div class="warning-box">
+                    <strong>Внимание:</strong> Ожирение у спаниелей дает колоссальную нагрузку на сердце и суставы.
+                </div>
+                <p>Строго соблюдайте норму кормления. Если используете лакомства при дрессировке — вычитайте их калорийность из основного рациона.</p>
+            </div>
+        </div>
+<div class="info-card" style="background: #f0f7ff; border-color: var(--accent-blue);">
+    <h3>⚖️ Калькулятор порции (сухой корм)</h3>
+    <p style="font-size: 0.9rem; margin-bottom: 15px;">Узнайте примерную суточную норму для взрослого спаниеля со средней активностью.</p>
+    
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <label>Вес собаки (кг): 
+            <input type="number" id="dogWeight" value="12" style="width: 70px; padding: 5px; border: 2px solid var(--dark-brown); border-radius: 10px;">
+        </label>
+        <button class="btn-main" style="padding: 10px 20px; font-size: 12px;" onclick="calculateFood()">Рассчитать</button>
+    </div>
+    <h4 id="foodResult" style="margin-top: 15px; font-family: 'Montserrat', sans-serif; color: var(--dark-brown);"></h4>
+</div>
+
+<script>
+    function calculateFood() {
+        const weight = parseFloat(document.getElementById('dogWeight').value);
+        if(!weight || weight <= 0) return;
+        // Примерная формула: 12-15 грамм корма на 1 кг веса собаки
+        const minFood = Math.round(weight * 12);
+        const maxFood = Math.round(weight * 15);
+        document.getElementById('foodResult').innerHTML = `🎯 Рекомендуемая суточная норма: <b>${minFood} - ${maxFood} г</b> в день.`;
+    }
+</script>
+        <div class="info-card" style="margin-top: 40px;">
+            <div class="icon-header">
+                <span style="font-size: 2rem;">🎓</span>
+                <h2>Воспитание и психология</h2>
+            </div>
+            <p>Спаниели — собаки с очень нежной психикой. Физическая сила и грубость могут навсегда разрушить доверие.</p>
+            <ul class="check-list">
+                <li><b>Метод поощрения:</b> Лучшая мотивация — кусочек лакомства и бурная похвала.</li>
+                <li><b>Социализация:</b> Приучайте щенка к шуму машин, толпе и другим собакам с 2-3 месяцев.</li>
+                <li><b>Умственная работа:</b> Игры в «поиск предмета» утомляют спаниеля лучше, чем 5-километровая пробежка.</li>
+            </ul>
+        </div>
+
+        <div class="info-card" style="border-bottom: 5px solid var(--accent-pink); margin-top: 40px;">
+            <div class="icon-header">
+                <span style="font-size: 2rem;">💰</span>
+                <h2>Покупка и выбор щенка</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h3>Примерные цены:</h3>
+                    <ul>
+                        <li><b>Пет-класс (для души):</b> 35 000 — 60 000 руб.</li>
+                        <li><b>Шоу-класс (для выставок):</b> от 80 000 руб.</li>
+                    </ul>
+                    <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">*Цены зависят от региона и титулованности родителей.</p>
+                </div>
+                <div>
+                    <h3>На что смотреть:</h3>
+                    <p>Обязательно требуйте **генетические тесты родителей** на дисплазию, заболевания глаз (PRA) и почек. Здоровый щенок должен быть любопытным и иметь чистый, прохладный нос.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="text-align: center; padding: 40px 0; background: var(--dark-brown); color: white; margin-top: 50px;">
+        <p>&copy; 2026 Spaniel Society. С любовью к длинным ушам.</p>
+    </footer>
+</body>
+</html>

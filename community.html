@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Клуб — Spaniel Society</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <header class="header">
+        <div class="container header__container">
+            <a href="index.html" class="logo">Spaniel Society</a>
+            <nav class="nav">
+                <ul class="nav__list">
+                    <li><a href="index.html" class="nav__link">Главная</a></li>
+                    <li><a href="breeds.html" class="nav__link">Породы</a></li>
+                    <li><a href="care.html" class="nav__link">Уход</a></li>
+                    <li><a href="community.html" class="nav__link active">Клуб</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="text-align: center; padding: 40px 0;">
+        <div class="info-card" style="max-width: 500px; margin: 40px auto; padding: 40px;">
+    <h1>Присоединяйтесь к нам</h1>
+    <p style="margin-bottom: 25px;">Станьте участником нашего закрытого сообщества владельцев спаниелей.</p>
+    
+    <form id="clubForm" onsubmit="submitClubForm(event)" style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+        <label style="font-weight: 600;">Ваше имя:
+            <input type="text" required placeholder="Иван" style="width: 100%; padding: 10px; border: 2px solid var(--dark-brown); border-radius: 15px; margin-top: 5px;">
+        </label>
+        <label style="font-weight: 600;">Порода и кличка хвостика:
+            <input type="text" required placeholder="Кокер Рокки" style="width: 100%; padding: 10px; border: 2px solid var(--dark-brown); border-radius: 15px; margin-top: 5px;">
+        </label>
+        <label style="font-weight: 600;">Ваш Email / Telegram:
+            <input type="text" required placeholder="@spaniel_love" style="width: 100%; padding: 10px; border: 2px solid var(--dark-brown); border-radius: 15px; margin-top: 5px;">
+        </label>
+        
+        <button type="submit" class="btn-main" style="margin-top: 15px; width: 100%;">Отправить лапку заявки </button>
+    </form>
+    <div id="formSuccess" style="display:none; color: #2e7d32; font-weight: bold; margin-top: 20px;"></div>
+</div>
+
+<script>
+    function submitClubForm(e) {
+        e.preventDefault();
+        document.getElementById('clubForm').style.display = 'none';
+        const successMessage = document.getElementById('formSuccess');
+        successMessage.style.display = 'block';
+        successMessage.innerHTML = '🎉 Ура! Заявка принята. Мы свяжемся с вами и вашим хвостиком в ближайшее время!';
+    }
+</script>
+    </main>
+
+    <footer style="text-align: center; padding: 100px 0; background: var(--dark-brown); color: white; border-radius: 100% 100% 0 0 / 20% 20% 0 0;">
+        <p>&copy; 2026 Spaniel Society. С любовью к длинным ушам.</p>
+    </footer>
+</body>
+</html>

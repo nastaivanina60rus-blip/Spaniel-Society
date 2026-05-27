@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <meta charset="UTF-8">
+    <title>Spaniel Society — Гид по породе</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Стили для летающих сердечек  */
+        .heart {
+            position: absolute;
+            font-size: 24px;
+            pointer-events: none; /* Чтобы не мешали кликать */
+            animation: fly 1.5s ease-out forwards;
+            z-index: 1000;
+            opacity: 0;
+        }
+
+        @keyframes fly {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            15% {
+                opacity: 1; /* Быстрое появление */
+            }
+            100% {
+                /* Разлетаются в разные стороны и вверх */
+                transform: translate(
+                    calc(-50% + (var(--rand-x) * 150px)), 
+                    calc(-50% + (var(--rand-y) * 150px) - 100px)
+                ) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Центрирование блока с кнопкой */
+        .action-area {
+            text-align: center;
+            margin: 60px 0;
+            position: relative; /* Для позиционирования сердечек относительно зоны */
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="container header__container">
+            <a href="index.html" class="logo">Spaniel Society</a>
+            <nav class="nav">
+                <ul class="nav__list">
+                    <li><a href="index.html" class="nav__link active">Главная</a></li>
+                    <li><a href="breeds.html" class="nav__link">Породы</a></li>
+                    <li><a href="care.html" class="nav__link">Уход</a></li>
+                    <li><a href="community.html" class="nav__link">Клуб</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 40px 0 60px;">
+        <div class="info-card">
+            <h1>Спаниели: Не просто охотники, а верные друзья</h1>
+            <p>Спаниели — это обширная группа пород, объединенных общим происхождением и уникальным характером. Согласно историческим справкам, их название произошло от слова «Испания», откуда они попали в Англию и завоевали мир.</p>
+            <p>Это собаки с высоким уровнем интеллекта и эмпатии. Они способны подстраиваться под ритм жизни любого хозяина: от активного охотника до городского жителя.</p>
+        
+        </div>
+
+        
+<div style="display: flex; justify-content: center; width: 100%;">
+    <img src="https://i.pinimg.com/736x/f4/79/8b/f4798bc2d02b1876dc9e3db43c45f924.jpg"
+         style="width: 50%"
+         alt="Собака">
+</div>
+
+  <div class="action-area">
+            <button class="btn-main" onclick="loveSpaniel(event)">Погладить спаниеля ❤️</button>
+        </div>
+        
+</div>
+    </main>
+
+    <script>
+        function loveSpaniel(e) {
+            const button = e.currentTarget;
+            const rect = button.getBoundingClientRect();
+            
+            /* Считаем центр кнопки относительно окна*/ 
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            /*Считаем прокрутку, чтобы сердечки не улетали при скролле*/ 
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+
+            for(let i=0; i<15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '❤️';
+                
+                /* Начальная позиция - центр кнопки (с учетом прокрутки)*/
+                heart.style.left = (centerX + scrollX) + 'px';
+                heart.style.top = (centerY + scrollY) + 'px';
+                
+                /*Генерируем случайные направления для разлета */
+                heart.style.setProperty('--rand-x', Math.random() - 0.5); // от -0.5 до 0.5
+                heart.style.setProperty('--rand-y', Math.random() - 0.5);
+                
+                /*Случайный размер и задержка*/
+                heart.style.fontSize = Math.random() * (30 - 18) + 18 + 'px';
+                heart.style.animationDelay = Math.random() * 0.2 + 's';
+
+                document.body.appendChild(heart);
+                
+                /*Удаляем элемент после завершения анимации*/
+                setTimeout(() => heart.remove(), 1500);
+            }
+        }
+    </script>
+    
+<section class="container" style="margin: 60px auto;">
+    <div class="info-card" style="border-color: var(--dark-brown); box-shadow: 15px 15px 0px var(--accent-blue);">
+        <h2 style="font-family: 'Playfair Display', serif; font-style: italic; margin-bottom: 10px; font-size: 32px;">Карта для хвостиков </h2>
+        <p style="text-align: center; opacity: 0.8; margin-bottom: 30px;">Где погулять со спаниелем в Питере? Интерактивная карта площадок, парков и дог-френдли локаций.</p>
+        
+    
+        <div id="dogMap" style="width: 100%; height: 450px; border-radius: 30px; border: 3px solid var(--dark-brown); overflow: hidden; background: #e5e3db;"></div>
+        
+        <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; opacity: 0.6;">* Нажимайте на метки на карте, чтобы узнать подробности о локации.</p>
+    </div>
+</section>
+
+<script type="text/javascript">
+    /*Инициализация карты после загрузки API*/
+    ymaps.ready(init);
+    
+    function init(){
+        /*Создание карты. Центрируем по Санкт-Петербургу */
+        var myMap = new ymaps.Map("dogMap", {
+            center: [59.93863, 30.31413], // Координаты центра Питера
+            zoom: 11,
+            controls: ['zoomControl', 'fullscreenControl']
+        });
+
+        /* Коллекция для площадок и парков (Зеленые метки с собачкой)*/
+        var dogParks = new ymaps.GeoObjectCollection(null, {
+            preset: 'islands#greenDogIcon'
+        });
+        
+        /*Точки в Санкт-Петербурге*/
+        dogParks.add(new ymaps.Placemark([59.9723, 30.2442], {
+            balloonContentHeader: '🌳 Приморский парк Победы (Крестовский остров)',
+            balloonContentBody: 'Огромная зеленая зона, много тенистых аллей и выход к воде. Спаниели обожают бегать здесь по траве и наблюдать за утками.',
+            hintContent: 'Парк на Крестовском'
+        }));
+        
+        dogParks.add(new ymaps.Placemark([59.9534, 30.2991], {
+            balloonContentHeader: '🦮 Площадка на Петроградской стороне',
+            balloonContentBody: 'Современная специализированная площадка для выгула и дрессировки с безопасным покрытием и снарядами для прыжков.',
+            hintContent: 'Дог-площадка'
+        }));
+
+        dogParks.add(new ymaps.Placemark([59.9278, 30.2884], {
+            balloonContentHeader: '⚓ Остров Новая Голландия',
+            balloonContentBody: 'Прекрасное ухоженное дог-френдли пространство. Гулять можно на поводке по всем дорожкам, газоны для собак закрыты, но атмосфера отличная!',
+            hintContent: 'Новая Голландия'
+        }));
+
+      /*Коллекция для Дог-френдли заведений (Розовые метки в стиле сайта)*/
+        var dogFriendlyPlaces = new ymaps.GeoObjectCollection(null, {
+            preset: 'islands#pinkFoodIcon'
+        });
+
+       /*Точки питерских кафе*/
+        dogFriendlyPlaces.add(new ymaps.Placemark([59.9592, 30.3012], {
+            balloonContentHeader: '☕ Кофейня «Civil» на Петроградке',
+            balloonContentBody: 'Очень атмосферное дог-френдли место. Вашему спаниелю здесь искренне обрадуются, предложат миску со свежей водой и сделают комплимент ушам.',
+            hintContent: 'Dog-friendly Civil'
+        }));
+
+        dogFriendlyPlaces.add(new ymaps.Placemark([59.9411, 30.3524], {
+            balloonContentHeader: '🥐 Кафе «Буше» на Восстания',
+            balloonContentBody: 'Сюда официально можно прийти за вкусной выпечкой вместе со своим четвероногим другом. На входе всегда рады воспитанным собакам.',
+            hintContent: 'Буше с собакой'
+        }));
+
+      /* Добавляем все локации на карту*/
+        myMap.geoObjects.add(dogParks);
+        myMap.geoObjects.add(dogFriendlyPlaces);
+        
+       /*Автоматически подстраиваем масштаб, чтобы все питерские точки красиво влезли в экран*/
+        myMap.setBounds(myMap.geoObjects.getBounds(), {
+            checkZoomRange: true,
+            zoomMargin: 50
+        });
+    }
+</script>
+
+<section style="background: var(--dark-brown); color: var(--white); padding: 80px 0 60px; margin-top: 60px; border-radius: 100% 100% 0 0 / 15% 15% 0 0; text-align: center;">
+    <div class="container" style="min-height: 220px; display: flex; flex-direction: column; justify-content: space-between; max-width: 800px; margin: 0 auto;">
+        <div>
+            <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">💡</span>
+            <h3 style="font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic; font-size: 36px; color: var(--white); margin-bottom: 20px;">Знаете ли вы?</h3>
+            
+            <p id="fact-text" style="font-weight: 600; font-size: 1.2rem; margin-bottom: 15px; transition: opacity 0.2s ease-in-out;">Загрузка интересного факта...</p>
+            
+          
+            <p id="fact-details" style="font-size: 1rem; opacity: 0.8; line-height: 1.6; min-height: 60px; transition: opacity 0.2s ease-in-out;">Загрузка подробностей...</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <button class="btn-main" style="background: var(--accent-pink); color: white; padding: 14px 30px; font-size: 13px;" onclick="nextFact()">Узнать ещё факт ✨</button>
+        </div>
+    </div>
+</section>
+
+<script>
+    const spanielFacts = [
+        {
+            text: "Марк Твен был страстным поклонником спаниелей.",
+            details: "В его рассказах и письмах часто мелькали упоминания этих собак. Писатель ценил их за поразительную эмпатию и утверждал, что в их глазах интеллекта и искренности больше, чем у многих людей."
+        },
+        {
+            text: "Шерсть водяных спаниелей имеет естественную водоотталкивающую способность.",
+            details: "Благодаря плотной структуре завитков и кожному салу, вода не доходит до подшерстка. Это позволяет им часами плавать в ледяной воде и не замерзать, что делает их идеальными помощниками на утиной охоте."
+        },
+        {
+            text: "Кавалер-кинг-чарльз-спаниели получили имя в честь короля Англии Чарльза II.",
+            details: "Король настолько обожал своих питомцев, что издал указ, действующий до сих пор: спаниелям этой породы разрешен вход в любое общественное место Великобритании, включая Парламент."
+        },
+        {
+            text: "Папильоны официально относятся к группе той-спаниелей.",
+            details: "С французского 'papillon' переводится как 'бабочка'. Своё название они заслужили благодаря изящным, широко расставленным ушам с длинной шерстью, которые в разлёте точь-в-точь напоминают крылья бабочки."
+        },
+        {
+            text: "Название «спаниель» говорит о древних испанских корнях породы.",
+            details: "Историки сходятся во мнении, что слово произошло от старофранцузского 'Espaignол' (испанский). Именно из Испании эти собаки попали в Англию в XIV веке, где из них вырастили лучших охотников мира."
+        },
+        {
+            text: "Спаниели — гении «умственной охоты» и поиска.",
+            details: "Их уникальный нюх и страсть к поиску сделали их незаменимыми не только в лесу. Сегодня кокер- и спрингер-спаниели официально служат в полиции и на таможне по всему миру, вычисляя контрабанду лучше любых сканеров."
+        }
+    ];
+
+    let currentFactIndex = -1;
+
+    function nextFact() {
+        let newIndex;
+        do {
+            newIndex = Math.floor(Math.random() * spanielFacts.length);
+        } while (newIndex === currentFactIndex);
+
+        currentFactIndex = newIndex;
+        const fact = spanielFacts[currentFactIndex];
+
+        const textEl = document.getElementById('fact-text');
+        const detailsEl = document.getElementById('fact-details');
+        
+        textEl.style.opacity = 0;
+        detailsEl.style.opacity = 0;
+
+        setTimeout(() => {
+            textEl.innerText = fact.text;
+            detailsEl.innerText = fact.details;
+            textEl.style.opacity = 1;
+            detailsEl.style.opacity = 0.8;
+        }, 200);
+    }
+
+    document.addEventListener("DOMContentLoaded", nextFact);
+</script> 
+</body>
+</html>

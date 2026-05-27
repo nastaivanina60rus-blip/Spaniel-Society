@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Породы спаниелей — Полная энциклопедия</title>
+  
+
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        .grid-suggestions { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 20px; 
+            margin: 40px 0;
+            cursor: pointer;
+        }
+        
+        .breed-details {
+            display: none; 
+            margin: 30px 0;
+            padding: 40px;
+            background: var(--white);
+            border-radius: 30px;
+            border: 2px solid var(--accent-pink);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .breed-details.active { display: block; }
+        .card.selected { border: 2px solid var(--accent-blue); transform: translateY(-5px); background: #fff; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+        @media (max-width: 768px) { .details-grid { grid-template-columns: 1fr; } }
+
+        .category-title {
+            margin: 60px 0 20px;
+            padding-left: 15px;
+            border-left: 5px solid var(--accent-pink);
+            font-family: 'Playfair Display';
+            color: var(--dark-brown);
+        }
+
+        .close-btn {
+            background: var(--accent-pink); color: white; border: none; padding: 8px 20px;
+            border-radius: 20px; cursor: pointer; float: right; font-weight: bold;
+        }
+
+        .game-zone {
+            height: 300px; display: flex; align-items: center; justify-content: center;
+            font-size: 50px; cursor: crosshair; position: relative; background: white;
+            border: 3px solid var(--dark-brown); border-radius: 30px; overflow: hidden;
+        }
+        .ball { position: absolute; font-size: 30px; transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bark-cloud { position: absolute; background: white; padding: 5px 10px; border-radius: 10px; font-size: 14px; border: 1px solid #ccc; animation: floatUp 1s forwards; }
+        #dog { transition: transform 0.8s ease; position: relative; z-index: 2; }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="container header__container">
+            <a href="index.html" class="logo">Spaniel Society</a>
+            <nav class="nav">
+                <ul class="nav__list">
+                    <li><a href="index.html" class="nav__link">Главная</a></li>
+                    <li><a href="breeds.html" class="nav__link active">Породы</a></li>
+                    <li><a href="care.html" class="nav__link">Уход</a></li>
+                    <li><a href="community.html" class="nav__link">Клуб</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+<div style="text-align: center; margin: 20px 0;">
+    <input type="text" id="breedSearch" placeholder="🔍 Введите полное название породы..." 
+           style="padding: 12px 20px; width: 80%; max-width: 400px; border-radius: 25px; border: 3px solid var(--dark-brown); font-family: inherit;">
+</div>
+
+<script>
+document.getElementById('breedSearch').addEventListener('input', function(e) {
+   /*Приводим запрос к нижнему регистру и убираем лишние пробелы по краям*/
+    const query = e.target.value.toLowerCase().trim();
+    
+   /*Фильтруем карточки на лету для удобства (показываем похожие)*/
+    document.querySelectorAll('.grid-suggestions .card').forEach(card => {
+        const breedName = card.querySelector('h4').innerText.toLowerCase();
+        if (breedName.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    /* Ищем совпадение*/
+    const cards = Array.from(document.querySelectorAll('.grid-suggestions .card'));
+    const exactMatch = cards.find(card => card.querySelector('h4').innerText.toLowerCase() === query);
+
+   /*Переход к карточке ТОЛЬКО если название введено полностью и без ошибок*/
+    if (exactMatch) {
+       
+        const onclickAttr = exactMatch.getAttribute('onclick');
+        const match = onclickAttr.match(/showBreed\('([^']+)'/);
+        
+        if (match && match[1]) {
+            const breedId = match[1];
+            
+           
+            showBreed(breedId, exactMatch);
+            
+            
+            document.getElementById('breedSearch').blur();
+        }
+    }
+});
+</script>
+
+    <main class="container" style="padding: 40px 0;">
+        <h2 data-aos="fade-up" style="text-align: center; font-family: 'Playfair Display'; font-size: 2.5rem;">Энциклопедия пород</h2>
+        <p style="text-align: center; opacity: 0.8;">Нажмите на любую карточку, чтобы изучить особенности породы</p>
+<div class="info-card" id="quiz-box" style="max-width: 600px; margin: 30px auto; text-align: center; padding: 30px;">
+    <h3 style="font-family: 'Playfair Display', serif; font-style: italic; margin-bottom: 10px;"> Подбор породы: Тест из 1 вопроса</h3>
+    <p id="quiz-question" style="margin-bottom: 20px; font-weight: 600;">Где в основном будет жить ваша собака и сколько времени вы готовы уделять активным пробежкам?</p>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px; margin: 0 auto;">
+        <button class="btn-main" style="padding: 10px; font-size: 12px;" onclick="getQuizResult('cavalier')">Квартира, тихие прогулки в парке</button>
+        <button class="btn-main" style="padding: 10px; font-size: 12px;" onclick="getQuizResult('russian')">Загородный дом, походы в лес и на реку</button>
+        <button class="btn-main" style="padding: 10px; font-size: 12px;" onclick="getQuizResult('springer')">Квартира/дом, но я фанат бега и собачьего спорта</button>
+    </div>
+    <div id="quiz-result" style="margin-top: 20px; font-weight: bold; color: var(--accent-pink);"></div>
+</div>
+
+<script>
+    function getQuizResult(breedType) {
+        const resultBox = document.getElementById('quiz-result');
+        if(breedType === 'cavalier') {
+            resultBox.innerHTML = "✨ Вам идеально подойдет Кавалер Кинг Чарльз Спаниель! Изучите его карточку ниже.";
+            showBreed('cavalier', document.querySelector('[onclick*="cavalier"]'));
+        } else if(breedType === 'russian') {
+            resultBox.innerHTML = "🌲 Ваш выбор — Русский охотничий спаниель! Нажмите на его карточку ниже.";
+            showBreed('russian', document.querySelector('[onclick*="russian"]'));
+        } else {
+            resultBox.innerHTML = "⚡ Идеально для вас — Английский спрингер-спаниель! Карточка открыта ниже.";
+            showBreed('springer', document.querySelector('[onclick*="springer"]'));
+        }
+    }
+</script>
+        <h3 class="category-title">Популярные и английские</h3>
+        <div class="grid-suggestions">
+            <div class="card" onclick="showBreed('springer', this)"><h4>Английский спрингер</h4></div>
+            <div class="card" onclick="showBreed('english_cocker', this)"><h4>Английский кокер</h4></div>
+            <div class="card" onclick="showBreed('american_cocker', this)"><h4>Американский кокер</h4></div>
+            <div class="card" onclick="showBreed('clamber', this)"><h4>Кламбер-спаниель</h4></div>
+            <div class="card" onclick="showBreed('welsh', this)"><h4>Вельш-спрингер</h4></div>
+            <div class="card" onclick="showBreed('field', this)"><h4>Филд-спаниель</h4></div>
+            <div class="card" onclick="showBreed('sussex', this)"><h4>Суссекс-спаниель</h4></div>
+        </div>
+
+        <h3 class="category-title">Отечественные и Европейские</h3>
+        <div class="grid-suggestions">
+            <div class="card" onclick="showBreed('russian', this)"><h4>Русский охотничий</h4></div>
+            <div class="card" onclick="showBreed('breton', this)"><h4>Бретонский эпаньоль</h4></div>
+            <div class="card" onclick="showBreed('munster_l', this)"><h4>Большой мюнстерлендер</h4></div>
+            <div class="card" onclick="showBreed('munster_s', this)"><h4>Малый мюнстерлендер</h4></div>
+            <div class="card" onclick="showBreed('french', this)"><h4>Французский спаниель</h4></div>
+            <div class="card" onclick="showBreed('blue_picardy', this)"><h4>Голубой пикардийский</h4></div>
+            <div class="card" onclick="showBreed('pont_audemer', this)"><h4>Понт-одемерский</h4></div>
+            <div class="card" onclick="showBreed('st_usuge', this)"><h4>Сент-юсужский</h4></div>
+            <div class="card" onclick="showBreed('wachtel', this)"><h4>Немецкий вахтельхунд</h4></div>
+        </div>
+
+        <h3 class="category-title">Декоративные и компаньоны</h3>
+        <div class="grid-suggestions">
+            <div class="card" onclick="showBreed('cavalier', this)"><h4>Кавалер Кинг Чарльз</h4></div>
+            <div class="card" onclick="showBreed('king_charles', this)"><h4>Кинг-чарльз (той)</h4></div>
+            <div class="card" onclick="showBreed('papillon', this)"><h4>Папильон</h4></div>
+            <div class="card" onclick="showBreed('tibetan', this)"><h4>Тибетский спаниель</h4></div>
+            <div class="card" onclick="showBreed('koiker', this)"><h4>Коикерхондье</h4></div>
+            <div class="card" onclick="showBreed('stabyhoun', this)"><h4>Стабихун</h4></div>
+            <div class="card" onclick="showBreed('drent', this)"><h4>Дрентская куропаточная</h4></div>
+        </div>
+
+        <h3 class="category-title">Водяные спаниели</h3>
+        <div class="grid-suggestions">
+            <div class="card" onclick="showBreed('irish_water', this)"><h4>Ирландский водяной</h4></div>
+            <div class="card" onclick="showBreed('american_water', this)"><h4>Американский водяной</h4></div>
+            <div class="card" onclick="showBreed('wetterhoun', this)"><h4>Веттерхун</h4></div>
+            <div class="card" onclick="showBreed('boykin', this)"><h4>Бойкин-спаниель</h4></div>
+        </div>
+
+        <div id="springer" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Английский спрингер-спаниель</h2>
+                    <p>Самая старая охотничья порода Англии. <strong>Характер:</strong> Решительный, активный, преданный. <strong>Для кого:</strong> Идеален для активных семей и спорта (аджилити).</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=fda4157820b7398f6183cf66a5f04b4d_l-4401693-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="russian" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Русский охотничий спаниель</h2>
+                    <p>Единственная отечественная порода. <strong>Характер:</strong> Настойчивый, выносливый, ласковый дома. <strong>Для кого:</strong> Лучший друг для охотников и туристов.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=35e249e7fae3ba8b0159535492fef2f2_l-5285139-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="cavalier" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Кавалер-кинг-чарльз-спаниель</h2>
+                    <p>Королевская порода. <strong>Характер:</strong> Безгранично добрый, не переносит одиночества. <strong>Для кого:</strong> Идеален для квартир и семей с маленькими детьми.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=9b211a35e58f15fb8bd08e6264607fb4_l-4893143-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="english_cocker" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Английский кокер-спаниель</h2>
+                    <p>Классика жанра. <strong>Характер:</strong> Веселый, постоянно виляет хвостом. Очень общителен. <strong>Особенность:</strong> Требует тщательного ухода за шерстью.</p>
+                </div>
+                <img src="https://i.pinimg.com/originals/c4/e6/31/c4e6319cca705997fa39c5b8f7f3169d.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="american_cocker" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Американский кокер-спаниель</h2>
+                    <p>Шоу-звезда. <strong>Характер:</strong> Послушный, ласковый, чувствительный. <strong>Для кого:</strong> Для тех, кто готов уделять много времени грумингу.</p>
+                </div>
+                    <img src="https://avatars.mds.yandex.net/i?id=5ddc902d0e49721b9738652805f2184d_l-4119571-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="papillon" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Континентальный той-спаниель (Папильон)</h2>
+                    <p>Собака-бабочка. <strong>Характер:</strong> Входит в топ самых умных собак. Очень энергичный и смелый. <strong>Особенность:</strong> Легко учит любые трюки.</p>
+                </div>
+                   <img src="https://avatars.mds.yandex.net/i?id=2dc7353446092c1adaee34a19d1e6e84_l-5300391-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="irish_water" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Ирландский водяной спаниель</h2>
+                    <p>Самый крупный. <strong>Характер:</strong> Шутливый, энергичный, превосходный пловец. <strong>Особенность:</strong> Имеет "крысиный" голый хвост и водонепроницаемую шерсть.</p>
+                </div>
+                   <img src="https://i.pinimg.com/736x/95/50/a4/9550a471dc271e95524b8d66dbbb53fd.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="clamber" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Кламбер-спаниель</h2>
+                    <p>Медлительный аристократ. <strong>Характер:</strong> Спокойный, серьезный, настойчивый. <strong>Для кого:</strong> Идеален для неспешных прогулок.</p>
+                </div>
+                   <img src="https://avatars.mds.yandex.net/i?id=2d6ee71dcf661f441d38ab12cde04490_l-4706584-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="koiker" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Коикерхондье</h2>
+                    <p>Голландская редкость. <strong>Характер:</strong> Осторожный, умный, чуткий. <strong>Особенность:</strong> Черные кончики ушей ("серьги") — визитная карточка.</p>
+                </div>
+                   <img src="https://i.pinimg.com/originals/22/32/84/223284773b190daf27acf5f6f74aac5b.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="breton" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Бретонский эпаньоль</h2>
+                    <p>Энергия Франции. <strong>Характер:</strong> Неутомимый охотник, очень сообразительный. <strong>Для кого:</strong> Нуждается в серьезных физических нагрузках.</p>
+                </div>
+                   <img src="https://huntingdog.ru/thumbnails/17/17da5bd225edee167743e7e3bf14190d.webp" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="welsh" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Вельш-спрингер-спаниель</h2>
+                    <p>Ярко-рыжий красавец. <strong>Характер:</strong> Преданный, выносливый, любит воду. <strong>Особенность:</strong> Всегда только бело-рыжий окрас.</p>
+                </div>
+                   <img src="https://i.pinimg.com/736x/71/6c/0c/716c0cf1d3ef09d27beec010c2395c3c.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="field" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Филд-спаниель</h2>
+                    <p>Редкая порода. <strong>Характер:</strong> Уравновешенный, послушный, ласковый. <strong>Для кого:</strong> Прекрасный компаньон для жизни за городом.</p>
+                </div>
+                <img src="https://i.pinimg.com/736x/0d/11/b3/0d11b31c8957a3b414b6b119ab2d04b2.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="sussex" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Суссекс-спаниель</h2>
+                    <p>Низкорослый и золотистый. <strong>Характер:</strong> Спокойный, иногда упрямый, очень привязчивый. <strong>Особенность:</strong> Уникальный "шоколадно-золотой" цвет шерсти.</p>
+                </div>
+                <img src="https://dogzilla.ru/wp-content/uploads/2021/02/sasseks-spaniel.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="king_charles" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Кинг-чарльз-спаниель (Английский той)</h2>
+                    <p>Крошечный компаньон. <strong>Характер:</strong> Тихий, нежный, домосед. <strong>Особенность:</strong> Отличается от Кавалера более короткой мордочкой.</p>
+                </div>
+                <img src="https://i.pinimg.com/736x/3f/13/a5/3f13a505f3030706d1b40c18ecbc05e4.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="tibetan" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Тибетский спаниель</h2>
+                    <p>Маленький лев монастырей. <strong>Характер:</strong> Бдительный, независимый, преданный семье. <strong>Особенность:</strong> Повадками часто напоминает кошку.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=26a84b8fbed869f9cf839870f4592b90_l-5858829-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="munster_l" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Большой мюнстерлендер</h2>
+                    <p>Немецкий талант. <strong>Характер:</strong> Послушный, контактный, универсальный охотник. <strong>Для кого:</strong> Для тех, кто ценит дисциплину и работу в поле.</p>
+                </div>
+                <img src="https://egida.by/_pu/7/26534395.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="munster_s" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Малый мюнстерлендер</h2>
+                    <p>Малый, но мощный. <strong>Характер:</strong> Темпераментный, преданный, очень понятливый в дрессировке. <strong>Особенность:</strong> Пользуется огромной популярностью в Европе.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=ac7f209cf911e9e944cea1c8ba5232ce_l-5652956-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="french" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Французский спаниель</h2>
+                    <p>Аристократ из Франции. <strong>Характер:</strong> Очень нежный, спокойный, умный. <strong>Особенность:</strong> Обладает врожденной деликатностью в общении.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=cbff90fc1c27f586342ebbd5b630f470_l-12371535-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="blue_picardy" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Голубой пикардийский спаниель</h2>
+                    <p>Редкий окрас. <strong>Характер:</strong> Выносливый, послушный, ладит с детьми. <strong>Особенность:</strong> Шерсть имеет характерный серо-черный отлив.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=65b0a68961a31bb7bc605cfe1768630d_l-5232881-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="wachtel" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Немецкий вахтельхунд</h2>
+                    <p>Профи охоты. <strong>Характер:</strong> Страстный в поиске, дома — добрый друг. <strong>Для кого:</strong> Только для активных владельцев или профессиональных охотников.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=abefb0796f8a08252963a370b99e3224_l-4411346-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="american_water" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Американский водяной спаниель</h2>
+                    <p>Универсальный помощник. <strong>Характер:</strong> Дружелюбный, смелый, обожает плавать. <strong>Особенность:</strong> Шерсть состоит из плотных мелких завитков.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=994eb8f2046e7cb73f9b04937ebddc09_l-5482298-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="wetterhoun" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Веттерхун (Голландский водяной)</h2>
+                    <p>Суровый защитник. <strong>Характер:</strong> Независимый, бдительный, верный. <strong>Особенность:</strong> Отличный охранник, в отличие от большинства других спаниелей.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=6d9b31366652bc4efaa98c10db7f5b3e_l-6489204-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="boykin" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Бойкин-спаниель</h2>
+                    <p>Южное очарование (США). <strong>Характер:</strong> Контактный, игривый, легко дрессируется. <strong>Особенность:</strong> Популярный участник соревнований на воде.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=d1a8d35c75102ee424683c58a6289bb4_l-13020977-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="pont_audemer" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Понт-одемерский спаниель</h2>
+                    <p>Редчайший вид. <strong>Характер:</strong> Веселый, очень ласковый, любит играть. <strong>Особенность:</strong> Имеет забавный "хохолок" из кудряшек на голове.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=8aa9e1c937b4afab7d4f203fcf7c7d6673b6cfcf-5259037-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="st_usuge" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Сент-юсужский спаниель</h2>
+                    <p>Французский компаньон. <strong>Характер:</strong> Легкий в общении, послушный, преданный. <strong>Для кого:</strong> Отличная семейная собака для длительных прогулок.</p>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=236c008d57100cdfaf9f6786f47e1643_sr-16445653-images-thumbs&n=13" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="stabyhoun" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Стабихун</h2>
+                    <p>Гордость Нидерландов. <strong>Характер:</strong> Спокойный, бдительный, невероятно терпеливый. <strong>Особенность:</strong> Считается одной из самых редких пород в мире.</p>
+                </div>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Stabyhoun.jpg/960px-Stabyhoun.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <div id="drent" class="breed-details">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <div class="details-grid">
+                <div>
+                    <h2>Дрентская куропаточная собака</h2>
+                    <p>Мастер стойки. <strong>Характер:</strong> Мягкий, преданный, очень любит детей. <strong>Особенность:</strong> На охоте работает в тесном контакте с хозяином, не уходя далеко.</p>
+                </div>
+                <img src="https://i.ytimg.com/vi/JMuL77ZyCWA/hqdefault.jpg" style="width:100%; border-radius:20px;">
+            </div>
+        </div>
+
+        <hr style="margin: 60px 0; border: 1px dashed var(--accent-pink);">
+
+        <h3 style="text-align: center; margin-bottom: 20px;">Пока выбираете — поиграйте с пёсиком!</h3>
+        <div class="game-zone" id="gameZone" onclick="throwBall(event)">
+            <div id="dog">🐶</div>
+        </div>
+        <p style="text-align: center; margin-top: 10px; opacity: 0.6;">Кликните в поле, чтобы бросить мячик</p>
+    </main>
+
+    <footer style="text-align: center; padding: 40px 0; background: var(--dark-brown); color: white; margin-top: 50px;">
+        <p>&copy; 2026 Spaniel Society. С любовью к длинным ушам.</p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true });
+
+        function showBreed(breedId, element) {
+            closeAll();
+            const target = document.getElementById(breedId);
+            if(target) {
+                target.classList.add('active');
+                element.classList.add('selected');
+                setTimeout(() => {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            } else {
+                alert("Информация скоро будет добавлена!");
+            }
+        }
+
+        function closeAll() {
+            document.querySelectorAll('.breed-details').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+        }
+
+        // Логика игры
+        let isPlaying = false;
+        function throwBall(e) {
+            if(isPlaying) return;
+            isPlaying = true;
+            
+            const zone = document.getElementById('gameZone');
+            const dog = document.getElementById('dog');
+            const rect = zone.getBoundingClientRect();
+            
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            ball.innerHTML = '🎾';
+            ball.style.left = '-50px';
+            ball.style.top = '50%';
+            zone.appendChild(ball);
+
+            setTimeout(() => {
+                ball.style.left = clickX + 'px';
+                ball.style.top = clickY + 'px';
+            }, 50);
+
+            setTimeout(() => {
+                dog.style.transform = `translate(${clickX - (rect.width/2)}px, ${clickY - (rect.height/2)}px)`;
+            }, 500);
+
+            setTimeout(() => {
+                dog.innerHTML = '🐶🦴';
+                ball.style.opacity = '0';
+                const bark = document.createElement('div');
+                bark.className = 'bark-cloud';
+                bark.innerHTML = 'Гав!';
+                bark.style.left = clickX + 'px';
+                bark.style.top = clickY + 'px';
+                zone.appendChild(bark);
+                setTimeout(() => bark.remove(), 1000);
+            }, 1200);
+
+            setTimeout(() => {
+                ball.remove();
+                dog.innerHTML = '🐶';
+                dog.style.transform = 'translate(0,0)';
+                isPlaying = false;
+            }, 2500);
+        }
+    </script>
+    <!-- Кнопка Вверх -->
+<button id="toTopBtn" onclick="scrollToTop()" style="display: none; position: fixed; bottom: 30px; right: 30px; z-index: 99; background: var(--accent-pink); color: white; border: 3px solid var(--dark-brown); width: 50px; height: 50px; border-radius: 50%; font-size: 20px; cursor: pointer; box-shadow: 4px 4px 0 var(--dark-brown); transition: transform 0.2s;">🐶▲</button>
+
+<script>
+    const topBtn = document.getElementById("toTopBtn");
+    window.onscroll = function() {
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+            topBtn.style.display = "block";
+        } else {
+            topBtn.style.display = "none";
+        }
+    };
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>
